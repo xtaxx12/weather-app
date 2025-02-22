@@ -1,8 +1,4 @@
-# Usar una imagen base ligera
-FROM php:8.1-fpm-alpine
-
-# Establecer el directorio de trabajo
-WORKDIR /var/www
+FROM php:8.2-fpm-alpine
 
 # Instalar dependencias del sistema
 RUN apk update && \
@@ -27,6 +23,9 @@ COPY . .
 
 # Instalar dependencias de Composer
 RUN composer install --no-dev --optimize-autoloader
+
+# Crear los directorios si no existen
+RUN mkdir -p /var/www/storage /var/www/bootstrap/cache
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
