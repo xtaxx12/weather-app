@@ -16,9 +16,8 @@ RUN apk update && \
     libjpeg-turbo-dev \
     freetype-dev \
     oniguruma-dev \
-    postgresql-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pdo_pgsql mbstring zip exif pcntl
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql zip exif pcntl
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -26,8 +25,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copiar el código de la aplicación
 COPY . .
 
-# Instalar dependencias de Composer (si existe composer.json)
-RUN if [ -f "composer.json" ]; then composer install --no-dev --optimize-autoloader; fi
+# Instalar dependencias de Composer
+RUN composer install --no-dev --optimize-autoloader
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
