@@ -1,9 +1,8 @@
 FROM php:8.2-fpm-alpine
 
-# Instalar Nginx y otras dependencias
+# Instalar dependencias del sistema
 RUN apk update && \
     apk add --no-cache \
-    nginx \
     git \
     curl \
     zip \
@@ -22,18 +21,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Copiar el código de la aplicación
 COPY . .
 
-# Crear los directorios necesarios
+# Instalar dependencias de Composer
+RUN composer install --no-dev --optimize-autoloader
+
+# Crear los directorios si no existen
 RUN mkdir -p /var/www/storage /var/www/bootstrap/cache
 
 # Configurar permisos
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 RUN chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Copiar la configuración de Nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Cambiar al usuario no root
+USER www-data
 
-# Exponer los puertos
-EXPOSE 80
+# Exponer el puerto en el que se ejecutará la aplicación
+EXPOSE 8080
 
-# Iniciar Nginx y PHP-FPM
-CMD sh -c "nginx && php-fpm"
+# Comando para iniciar PHP-FPM
+CMD ["php-fpm"]
