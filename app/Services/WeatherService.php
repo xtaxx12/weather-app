@@ -17,7 +17,7 @@ class WeatherService
 
     public function getWeather($lat, $lon)
     {
-        $response = $this->client->get("https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$this->apiKey}&units=metric");
+        $response = $this->client->get("https://api.openweathermap.org/data/2.5/weather?lat={$lat}&lon={$lon}&appid={$this->apiKey}");
         return json_decode($response->getBody(), true);
     }
 }

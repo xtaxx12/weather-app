@@ -4,50 +4,40 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\WeatherService;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
 class WeatherController extends Controller
 {
     protected $weatherService;
 
-    /**
-     * Constructor para inyectar el servicio WeatherService.
-     *
-     * @param WeatherService $weatherService
-     */
+    // Inyectar el servicio WeatherService en el constructor
     public function __construct(WeatherService $weatherService)
     {
         $this->weatherService = $weatherService;
     }
-    public function fetchWeather($lat, $lon) {
-        $cacheKey = "weather_{$lat}_{$lon}";
-        return Cache::remember($cacheKey, 3600, function () use ($lat, $lon) {
-            return Http::get("https://api.openweathermap.org/data/2.5/weather", [
-                'lat' => $lat, 'lon' => $lon, 'appid' => env('WEATHER_API_KEY'), 'units' => 'metric'
-            ])->json();
-        });
-    }
 
-    /**
-     * Muestra el clima de un usuario específico.
-     *
-     * @param int $userId
-     * @return \Illuminate\View\View
-     */
-
-
-    public function show($userId)
+    public function getWeather($userId)
     {
-        // Busca el usuario por su ID o lanza una excepción 404 si no existe
+        // Obtener el usuario por su ID
         $user = User::findOrFail($userId);
 
-        // Usa el caché para almacenar los datos del clima durante 60 minutos
-        $weather = Cache::remember("weather_{$user->id}", 60, function() use ($user) {
-            return $this->weatherService->getWeather($user->latitude, $user->longitude);
-        });
+        // Obtener el clima usando el servicio
+        $weather = $this->weatherService->getWeather($user->latitude, $user->longitude);
 
-        // Retorna la vista con los datos del usuario y el clima
-        return view('weather.show', compact('user', 'weather'));
+        // Transformar la respuesta de OpenWeatherMap
+        $formattedWeather = [
+            'id' => $user->id,
+            'name' => $user->name,
+            'weather' => [
+                'condition' => $weather['weather'][0]['description'], // Descripción del clima
+                'temperature' => $weather['main']['temp'] - 273.15,   // Convertir de Kelvin a Celsius
+                'humidity' => $weather['main']['humidity'],          // Humedad
+                'windSpeed' => $weather['wind']['speed'],            // Velocidad del viento
+                'lastUpdated' => now()->toDateTimeString(),          // Fecha y hora de la última actualización
+            ],
+        ];
+
+        // Devolver la respuesta en formato JSON
+        return response()->json($formattedWeather);
     }
 }

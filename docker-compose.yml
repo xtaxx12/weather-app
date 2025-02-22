@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "9000:9000"
+    volumes:
+      - .:/var/www
+    environment:
+      - DB_HOST=mysql
+      - DB_DATABASE=weather_app
+      - DB_USERNAME=root
+      - DB_PASSWORD=
+    depends_on:
+      - db
+
+  db:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=
+      - MYSQL_DATABASE=weather_app
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

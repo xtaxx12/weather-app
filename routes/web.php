@@ -5,6 +5,7 @@ use App\Http\Controllers\WeatherController; // Importa el controlador
 use App\Http\Controllers\UserController;
 
 
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -22,4 +23,6 @@ Route::get('/', function () {
 });
 Route::get('api/users', [UserController::class, 'index']);
 // Ruta para mostrar el clima de un usuario específico
-Route::get('api/weather/{userId}', [WeatherController::class, 'show'])->name('weather.show');
+
+
+Route::get('api/weather/{userId}', [WeatherController::class, 'getWeather']);
